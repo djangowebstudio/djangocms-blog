@@ -17,7 +17,7 @@ class BlogConfig(TranslatableModel, AppHookConfig):
     Adds some translatable, per-app-instance fields.
     """
     translations = TranslatedFields(
-        app_title=models.CharField(_('application title'), max_length=234),
+        app_title=models.CharField(_('application title'), max_length=234, default='Blog-News'),
         object_name=models.CharField(
             _('object name'), max_length=234, default=get_setting('DEFAULT_OBJECT_NAME')
         ),

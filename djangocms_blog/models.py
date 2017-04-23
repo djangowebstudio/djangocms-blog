@@ -54,6 +54,12 @@ except ImportError:
         """
         pass
 
+try: # pragma: no cover
+    from clubs.models import Club
+except ImportError: # pragma: no cover
+    class Club(object):
+        pass
+
 
 @python_2_unicode_compatible
 class BlogCategory(TranslatableModel):
@@ -66,7 +72,7 @@ class BlogCategory(TranslatableModel):
     date_created = models.DateTimeField(_('created at'), auto_now_add=True)
     date_modified = models.DateTimeField(_('modified at'), auto_now=True)
     app_config = AppHookConfigField(
-        BlogConfig, null=True, verbose_name=_('app. config')
+        BlogConfig, null=True, verbose_name=_('app.config'),
     )
 
     translations = TranslatedFields(
@@ -134,6 +140,8 @@ class Post(KnockerModel, ModelMeta, TranslatableModel):
     """
     Blog post
     """
+    club = models.ForeignKey(Club, blank=True, null=True, 
+        help_text=_('Optionally connect this post to a club.'))
     author = models.ForeignKey(dj_settings.AUTH_USER_MODEL,
                                verbose_name=_('author'), null=True, blank=True,
                                related_name='djangocms_blog_post_author')
@@ -144,7 +152,7 @@ class Post(KnockerModel, ModelMeta, TranslatableModel):
     date_published_end = models.DateTimeField(_('published until'), null=True, blank=True)
     date_featured = models.DateTimeField(_('featured date'), null=True, blank=True)
     publish = models.BooleanField(_('publish'), default=False)
-    categories = models.ManyToManyField('djangocms_blog.BlogCategory', verbose_name=_('category'),
+    categories = models.ManyToManyField('djangocms_blog.BlogCategory', verbose_name=_('helper'),
                                         related_name='blog_posts', blank=True)
     main_image = FilerImageField(verbose_name=_('main image'), blank=True, null=True,
                                  on_delete=models.SET_NULL,
@@ -184,6 +192,7 @@ class Post(KnockerModel, ModelMeta, TranslatableModel):
         post_text=HTMLField(_('text'), default='', blank=True),
         meta={'unique_together': (('language_code', 'slug'),)}
     )
+    banner = PlaceholderField('post_banner', related_name='post_banner')
     content = PlaceholderField('post_content', related_name='post_content')
     liveblog = PlaceholderField('live_blog', related_name='live_blog')
     enable_liveblog = models.BooleanField(verbose_name=_('enable liveblog on post'), default=False)
@@ -246,13 +255,47 @@ class Post(KnockerModel, ModelMeta, TranslatableModel):
 
     def save(self, *args, **kwargs):
         """
-        Handle some auto configuration during save
+        Handle some auto configuration during save.
+        We are misusing *category* to connect the post
+        to a club.
         """
         if self.publish and self.date_published is None:
             self.date_published = timezone.now()
         if not self.slug and self.title:
             self.slug = slugify(self.title)
+        
+        # init a variable for category
+        category = None
+        if self.club:
+            # Create a category named after Club
+            news_config, created_config = BlogConfig.objects.get_or_create(
+                namespace='news',
+            )
+
+            try:
+                category = BlogCategory.objects.get(
+                    translations__slug=self.club.slug
+                    )
+            except BlogCategory.DoesNotExist:
+                # master needs to be saved before we may 
+                # create translation
+                category = BlogCategory.objects.create(
+                    app_config = news_config
+                )
+                # create translation saves automatically
+                category.create_translation(
+                    language_code='nl',
+                    name=self.club.name,
+                    slug=self.club.slug
+                )
         super(Post, self).save(*args, **kwargs)
+        if category:
+            self.categories.clear() # just one club 
+            self.categories.add(category)
+        # remove all categories if no club is selected
+        if not self.club:
+            self.categories.clear()
+            
 
     def save_translation(self, translation, *args, **kwargs):
         """

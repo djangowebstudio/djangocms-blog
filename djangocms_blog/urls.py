@@ -36,7 +36,7 @@ urlpatterns = [
         PostArchiveView.as_view(), name='posts-archive'),
     url(r'^author/(?P<username>[\w\.@+-]+)/$',
         AuthorEntriesView.as_view(), name='posts-author'),
-    url(r'^category/(?P<category>[\w\.@+-]+)/$',
+    url(r'^club/(?P<category>[\w\.@+-]+)/$',
         CategoryEntriesView.as_view(), name='posts-category'),
     url(r'^tag/(?P<tag>[-\w]+)/$',
         TaggedListView.as_view(), name='posts-tagged'),

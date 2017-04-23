@@ -84,9 +84,13 @@ class PostAdmin(PlaceholderAdminMixin, FrontendEditableAdminMixin,
     raw_id_fields = ['author']
     frontend_editable_fields = ('title', 'abstract', 'post_text')
     enhance_exclude = ('main_image', 'tags')
+    # filter_horizontal = ('categories',)
     _fieldsets = [
         (None, {
-            'fields': [['title', 'categories', 'publish', 'app_config']]
+            'fields': [
+                ['publish'], 
+                ['title','club', ], 
+            ]
         }),
         (_('Info'), {
             'fields': [['slug', 'tags'],
