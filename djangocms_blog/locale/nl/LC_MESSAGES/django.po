@@ -61,7 +61,7 @@ msgstr "Je kan gewone strings opgeven, een Bericht model attribuut of methode na
 
 #: apps.py:15
 msgid "django CMS Blog"
-msgstr "django CMS Blog"
+msgstr "Nieuws"
 
 #: cms_appconfig.py:20
 msgid "application title"
@@ -73,11 +73,11 @@ msgstr "object naam"
 
 #: cms_appconfig.py:27
 msgid "blog config"
-msgstr "blog configuratie"
+msgstr "nieuws configuratie"
 
 #: cms_appconfig.py:28
 msgid "blog configs"
-msgstr "blog configuraties"
+msgstr "nieuws configuraties"
 
 #: cms_appconfig.py:31
 msgid "untitled"
@@ -226,7 +226,7 @@ msgstr "Blog"
 
 #: cms_menus.py:24
 msgid "Blog menu"
-msgstr "Blog menu"
+msgstr "Nieuws menu"
 
 #: cms_toolbars.py:23
 msgid "Post list"
@@ -262,7 +262,7 @@ msgstr "Maak een nieuwe {0} in {1}"
 #: feeds.py:49
 #, python-format
 msgid "Blog articles on %(site_name)s"
-msgstr "Blog artikelen op %(site_name)s"
+msgstr "Nieuws artikelen op %(site_name)s"
 
 #: liveblog/apps.py:10
 msgid "Liveblog"
@@ -330,7 +330,7 @@ msgstr "blog categorie"
 
 #: models.py:82
 msgid "blog categories"
-msgstr "blog categorieën"
+msgstr "nieuws categorieën"
 
 #: models.py:138
 msgid "author"
@@ -420,11 +420,11 @@ msgstr ""
 
 #: models.py:223
 msgid "blog article"
-msgstr "blog artikel"
+msgstr "nieuws artikel"
 
 #: models.py:224
 msgid "blog articles"
-msgstr "blog artikelen"
+msgstr "nieuws artikelen"
 
 #: models.py:399
 msgid "current site"

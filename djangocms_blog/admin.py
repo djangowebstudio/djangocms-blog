@@ -88,7 +88,7 @@ class PostAdmin(PlaceholderAdminMixin, FrontendEditableAdminMixin,
     _fieldsets = [
         (None, {
             'fields': [
-                ['publish'], 
+                ['publish', 'app_config',], 
                 ['title','club', ], 
             ]
         }),
