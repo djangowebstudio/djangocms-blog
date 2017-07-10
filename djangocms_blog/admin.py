@@ -23,6 +23,8 @@ from .forms import CategoryAdminForm, PostAdminForm
 from .models import BlogCategory, Post
 from .settings import get_setting
 
+from srp.base_admin import FilterUserAdmin
+
 try:
     from admin_enhancer.admin import EnhancedModelAdminMixin
 except ImportError:
@@ -73,10 +75,10 @@ class BlogCategoryAdmin(EnhancedModelAdminMixin, ModelAppHookConfig, Translatabl
 
 
 class PostAdmin(PlaceholderAdminMixin, FrontendEditableAdminMixin,
-                ModelAppHookConfig, TranslatableAdmin):
+                ModelAppHookConfig, TranslatableAdmin, FilterUserAdmin):
     form = PostAdminForm
     list_display = [
-        'title', 'author', 'date_published', 'app_config', 'all_languages_column',
+        'title', 'club', 'date_published', 'app_config', 'all_languages_column',
         'date_published_end'
     ]
     search_fields = ('translations__title',)
@@ -225,6 +227,7 @@ class PostAdmin(PlaceholderAdminMixin, FrontendEditableAdminMixin,
         :return: fieldsets configuration
         """
         app_config_default = self._app_config_select(request, obj)
+
         if app_config_default is None and request.method == 'GET':
             return super(PostAdmin, self).get_fieldsets(request, obj)
         if not obj:
@@ -259,7 +262,7 @@ class PostAdmin(PlaceholderAdminMixin, FrontendEditableAdminMixin,
 
     def save_model(self, request, obj, form, change):
         obj._set_default_author(request.user)
-        super(PostAdmin, self).save_model(request, obj, form, change)
+        super(FilterUserAdmin, self).save_model(request, obj, form, change)
 
     def get_queryset(self, request):
         qs = super(PostAdmin, self).get_queryset(request)
@@ -267,7 +270,9 @@ class PostAdmin(PlaceholderAdminMixin, FrontendEditableAdminMixin,
         if sites.exists():
             pks = list(sites.all().values_list('pk', flat=True))
             qs = qs.filter(sites__in=pks)
-        return qs.distinct()
+        if request.user.is_superuser:
+            return qs.distinct()
+        return qs.filter(club=self.get_club(request)).distinct()
 
     def save_related(self, request, form, formsets, change):
         if self.get_restricted_sites(request).exists():
@@ -362,7 +367,8 @@ class BlogConfigAdmin(BaseAppHookConfig, TranslatableAdmin):
                 )
             }),
         ]
-
+    
+    
     def save_model(self, request, obj, form, change):
         """
         Clear menu cache when changing menu structure

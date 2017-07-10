@@ -6,30 +6,37 @@ from cms.toolbar_pool import toolbar_pool
 from cms.utils.urlutils import admin_reverse
 from django.core.urlresolvers import reverse
 from django.utils.translation import override, ugettext_lazy as _
+from srp.base_admin import BaseUserAdmin
 
 from .settings import get_setting
 
 
 @toolbar_pool.register
-class BlogToolbar(CMSToolbar):
-
+class BlogToolbar(CMSToolbar, BaseUserAdmin):
+        
     def populate(self):
         if (not self.is_current_app and not get_setting('ENABLE_THROUGH_TOOLBAR_MENU')) or \
                 not self.request.user.has_perm('djangocms_blog.add_post'):
             return   # pragma: no cover
-        admin_menu = self.toolbar.get_or_create_menu('djangocms_blog', _('Blog'))
+        admin_menu = self.toolbar.get_or_create_menu('djangocms_blog', _('django CMS Blog'))
         with override(self.current_lang):
             url = reverse('admin:djangocms_blog_post_changelist')
             admin_menu.add_modal_item(_('Post list'), url=url)
             url = reverse('admin:djangocms_blog_post_add')
-            admin_menu.add_modal_item(_('Add post'), url=url)
+            
+            if self.is_webmaster(self.request):
+                admin_menu.add_modal_item(_('Add post'), url='{}?app_config=3'.format(url))
+            else:
+                admin_menu.add_modal_item(_('Add post'), url=url)
+            
             current_config = getattr(self.request, get_setting('CURRENT_NAMESPACE'), None)
-            if current_config:
+            if current_config and self.request.user.is_superuser:
                 url = reverse('admin:djangocms_blog_blogconfig_change', args=(current_config.pk,))
                 admin_menu.add_modal_item(_('Edit configuration'), url=url)
 
             current_post = getattr(self.request, get_setting('CURRENT_POST_IDENTIFIER'), None)
-            if current_post and self.request.user.has_perm('djangocms_blog.change_post'):  # pragma: no cover  # NOQA
+            
+            if current_post and self._has_change_permission(self.request, current_post):  # pragma: no cover  # NOQA
                 admin_menu.add_modal_item(_('Edit Post'), reverse(
                     'admin:djangocms_blog_post_change', args=(current_post.pk,)),
                     active=True)

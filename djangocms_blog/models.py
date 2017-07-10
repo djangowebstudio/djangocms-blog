@@ -57,7 +57,7 @@ except ImportError:
 try: # pragma: no cover
     from clubs.models import Club
 except ImportError: # pragma: no cover
-    class Club(object):
+    class Club(models.Model):
         pass
 
 
