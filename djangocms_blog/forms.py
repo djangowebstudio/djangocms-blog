@@ -57,8 +57,6 @@ class PostAdminForm(TranslatableModelForm):
         qs = BlogCategory.objects
 
         if getattr(self.instance, 'app_config_id', None):
-            print ('is NONE')
-            print ('------------------------------------')
             qs = qs.namespace(self.instance.app_config.namespace)
         elif 'initial' in kwargs and 'app_config' in kwargs['initial']:
             config = BlogConfig.objects.get(pk=kwargs['initial']['app_config'])
